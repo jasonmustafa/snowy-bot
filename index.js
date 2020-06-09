@@ -64,5 +64,30 @@ client.on('message', (message) => {
       );
       message.channel.send(message.author, attachment);
       break;
+
+    case 'kick':
+      // first user mentioned in message
+      const user = message.mentions.users.first();
+
+      if (user) {
+        const member = message.guild.member(user);
+
+        // check if member in server
+        if (member) {
+          member
+            .kick('Member was kicked')
+            .then(() => {
+              message.reply(`Successfully kicked ${user.tag}`);
+            })
+            .catch((err) => {
+              message.reply('I was unable to kick the member');
+              console.log(err);
+            });
+        } else {
+          message.reply('That user is not in this server');
+        }
+      } else {
+        message.reply('Please specify a user');
+      }
   }
 });
