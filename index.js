@@ -5,6 +5,8 @@ const client = new Client();
 
 client.once('ready', () => {
   console.log('Snowy is online!');
+
+  client.user.setActivity('Your Every Move', { type: 'WATCHING' }).catch(console.error);
 });
 
 const TOKEN = process.env.TOKEN;
@@ -55,5 +57,12 @@ client.on('message', (message) => {
         .setColor(0xf1c40f);
 
       message.channel.send(embed);
+      break;
+    case 'send':
+      const attachment = new MessageAttachment(
+        'https://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/article_thumbnails/other/cat_relaxing_on_patio_other/1800x1200_cat_relaxing_on_patio_other.jpg?resize=750px:*'
+      );
+      message.channel.send(message.author, attachment);
+      break;
   }
 });
