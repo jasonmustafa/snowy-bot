@@ -1,30 +1,28 @@
+const Discord = require('discord.js');
+const client = new Discord.Client();
+
 require('dotenv').config();
-const { Client, MessageEmbed, MessageAttachment } = require('discord.js');
+const TOKEN = process.env.TOKEN;
 
-const client = new Client();
+const PREFIX = '!';
+let version = '1.0.1';
 
-client.once('ready', () => {
-  console.log('Snowy is online!');
+// TODO: use PREFIX
+
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
 
   client.user.setActivity('Your Every Move', { type: 'WATCHING' }).catch(console.error);
 });
 
-const TOKEN = process.env.TOKEN;
-
-client.login(TOKEN);
-
-const PREFIX = '!';
-
-let version = '1.0.1';
-
 client.on('guildMemberAdd', (member) => {
-  const channel = member.guild.channels.find((channel) => channel.name === 'bot-testing');
+  const channel = member.guild.channels.cache.find((ch) => ch.name === 'welcome');
 
-  if (!channel) {
-    return;
-  }
+  // do nothing if the channel does not exist
+  if (!channel) return;
 
-  channel.send(`Welcome to the server, ${member}, please read the rules in the rules channel!`);
+  // welcome the user
+  channel.send(`Welcome to the server, ${member}`);
 });
 
 client.on('message', (message) => {
@@ -50,7 +48,7 @@ client.on('message', (message) => {
       message.channel.bulkDelete(args[1]);
       break;
     case 'embed':
-      const embed = new MessageEmbed()
+      const embed = new Discord.MessageEmbed()
         .setTitle('User Information')
         .addField('Player Name', message.author.username)
         .setThumbnail('https://i.imgur.com/4AiXzf8.jpeg')
@@ -59,13 +57,19 @@ client.on('message', (message) => {
       message.channel.send(embed);
       break;
     case 'send':
-      const attachment = new MessageAttachment(
+      const attachment = new Discord.MessageAttachment(
         'https://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/article_thumbnails/other/cat_relaxing_on_patio_other/1800x1200_cat_relaxing_on_patio_other.jpg?resize=750px:*'
       );
       message.channel.send(message.author, attachment);
       break;
 
     case 'kick':
+      // check authorization
+      if (!message.member.roles.cache.find((r) => r.name === 'Owner' || r.name === 'Administrator' || r.name === 'Moderator')) {
+        // send message if user not allowed to kick
+        return message.reply('You do not have the authorization to kick users! Please improve yourself');
+      }
+
       // first user mentioned in message
       const user = message.mentions.users.first();
 
@@ -91,3 +95,5 @@ client.on('message', (message) => {
       }
   }
 });
+
+client.login(TOKEN);
