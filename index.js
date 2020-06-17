@@ -4,8 +4,12 @@ const client = new Discord.Client();
 require('dotenv').config();
 const TOKEN = process.env.TOKEN;
 
+const ytdl = require('ytdl-core');
+
 const PREFIX = '!';
 let version = '1.0.1';
+
+let servers = {};
 
 // TODO: use PREFIX
 
@@ -25,7 +29,10 @@ client.on('guildMemberAdd', (member) => {
   channel.send(`Welcome to the server, ${member}`);
 });
 
-client.on('message', (message) => {
+client.on('message', async (message) => {
+  // stop if message not sent in a guild (server)
+  if (!message.guild) return;
+
   // split string after !
   let args = message.content.substring(PREFIX.length).split(' ');
 
@@ -45,6 +52,9 @@ client.on('message', (message) => {
       break;
     case 'clear':
       if (!args[1]) return message.reply('Error: please specify second argument!');
+
+      // TODO: check that value is 99 or less
+
       message.channel.bulkDelete(args[1]);
       break;
     case 'embed':
@@ -65,9 +75,15 @@ client.on('message', (message) => {
 
     case 'kick':
       // check authorization
-      if (!message.member.roles.cache.find((r) => r.name === 'Owner' || r.name === 'Administrator' || r.name === 'Moderator')) {
+      if (
+        !message.member.roles.cache.find(
+          (r) => r.name === 'Owner' || r.name === 'Administrator' || r.name === 'Moderator'
+        )
+      ) {
         // send message if user not allowed to kick
-        return message.reply('You do not have the authorization to kick users! Please improve yourself');
+        return message.reply(
+          'You do not have the authorization to kick users! Please improve yourself'
+        );
       }
 
       // first user mentioned in message
@@ -93,6 +109,46 @@ client.on('message', (message) => {
       } else {
         message.reply('Please specify a user');
       }
+
+      break;
+
+    case 'play':
+      let serverID = message.guild.id;
+
+      function play(connection) {
+        let server = servers[serverID];
+
+        server.dispatcher = connection.play(ytdl(server.queue[0], { filter: 'audioonly' }));
+
+        server.queue.shift();
+
+        server.dispatcher.on('end', () => {
+          if (server.queue[0]) {
+            play(connection);
+          } else {
+            connection.disconnect();
+          }
+        });
+      }
+
+      if (!args[1]) {
+        message.reply('Please provide a link!');
+        return;
+      }
+
+      if (!message.member.voice.channel) {
+        message.reply('You must be in a voice channel!');
+        return;
+      }
+
+      if (!servers[serverID]) {
+        servers[serverID] = { queue: [] };
+      }
+
+      const connection = await message.member.voice.channel.join();
+
+      const ytdl = require('ytdl-core');
+      connection.play(ytdl('https://www.youtube.com/watch?v=QH2-TGUlwu4', { filter: 'audioonly' }));
   }
 });
 
