@@ -1,7 +1,18 @@
 require('dotenv').config();
-const { Client, MessageEmbed, MessageAttachment } = require('discord.js');
+const Discord = require('discord.js');
+const config = require('./config.json');
 
-const client = new Client();
+const client = new Discord.Client();
+const fs = require('fs');
+
+client.commands = new Discord.Collection();
+const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+
+    client.commands.set(command.name, command);
+}
 
 client.once('ready', () => {
     console.log('Snowy is online!');
@@ -10,12 +21,7 @@ client.once('ready', () => {
 });
 
 const TOKEN = process.env.TOKEN;
-
 client.login(TOKEN);
-
-const PREFIX = '!';
-
-let version = '1.0.1';
 
 client.on('guildMemberAdd', (member) => {
     const channel = member.guild.channels.find((channel) => channel.name === 'bot-testing');
@@ -28,41 +34,47 @@ client.on('guildMemberAdd', (member) => {
 });
 
 client.on('message', (message) => {
-    // split string after !
-    let args = message.content.substring(PREFIX.length).split(' ');
+    if (!message.content.startsWith(config.prefix) || message.author.bot) {
+        return;
+    }
 
-    switch (args[0]) {
-        case 'ping':
-            message.channel.send('Pong!');
-            break;
-        case 'website':
-            message.channel.send('https://www.jasonmustafa.com/');
-            break;
-        case 'info':
-            if (args[1] === 'version') {
-                message.channel.send('Version ' + version);
-            } else {
-                message.channel.send('Invalid arguments!');
-            }
-            break;
-        case 'clear':
-            if (!args[1]) return message.reply('Error: please specify second argument!');
-            message.channel.bulkDelete(args[1]);
-            break;
-        case 'embed':
-            const embed = new MessageEmbed()
-                .setTitle('User Information')
-                .addField('Player Name', message.author.username)
-                .setThumbnail('https://i.imgur.com/4AiXzf8.jpeg')
-                .setColor(0xf1c40f);
+    const args = message.content.slice(config.prefix.length).split(/ +/);
+    const command = args.shift().toLowerCase();
 
-            message.channel.send(embed);
+    switch (command) {
+        case 'ping': {
+            client.commands.get('ping').execute(message, args);
             break;
-        case 'send':
-            const attachment = new MessageAttachment(
-                'https://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/article_thumbnails/other/cat_relaxing_on_patio_other/1800x1200_cat_relaxing_on_patio_other.jpg?resize=750px:*'
-            );
-            message.channel.send(message.author, attachment);
+        }
+
+        case 'myname': {
+            client.commands.get('myname').execute(message, args);
             break;
+        }
+
+        case 'say': {
+            client.commands.get('say').execute(message, args);
+            break;
+        }
+
+        case 'info': {
+            client.commands.get('info').execute(message, args);
+            break;
+        }
+
+        case 'embed': {
+            client.commands.get('embed').execute(message, args);
+            break;
+        }
+
+        case 'send': {
+            client.commands.get('send').execute(message, args);
+            break;
+        }
+
+        case 'default': {
+            client.commands.get('unsupported').execute(message, args);
+            break;
+        }
     }
 });
