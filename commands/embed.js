@@ -1,11 +1,11 @@
-const Discord = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 module.exports = {
     name: 'embed',
     description: 'Send an embed of a wonderful cat.',
 
     execute(message, args) {
-        const embed = new Discord.MessageEmbed()
+        const embed = new MessageEmbed()
             .setTitle('User Information')
             .addField('Player Name', message.author.username)
             .setThumbnail('https://i.imgur.com/4AiXzf8.jpeg')

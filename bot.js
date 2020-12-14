@@ -5,6 +5,8 @@ const config = require('./config.json');
 const client = new Discord.Client();
 const fs = require('fs');
 
+// const roleClaim = require('./role-claim');
+
 client.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
 
@@ -18,10 +20,11 @@ client.once('ready', () => {
     console.log('Snowy is online!');
 
     client.user.setActivity('Your Every Move', { type: 'WATCHING' }).catch(console.error);
+
+    // roleClaim(client);
 });
 
 const TOKEN = process.env.TOKEN;
-client.login(TOKEN);
 
 client.on('guildMemberAdd', (member) => {
     const channel = member.guild.channels.find((channel) => channel.name === 'bot-testing');
@@ -72,9 +75,21 @@ client.on('message', (message) => {
             break;
         }
 
-        case 'default': {
+        // case 'roles': {
+        //     client.commands.get('roles').execute(message,args);
+        //     break;
+        // }
+
+        case 'secretsanta': {
+            client.commands.get('secretsanta').execute(message, args);
+            break;
+        }
+
+        default: {
             client.commands.get('unsupported').execute(message, args);
             break;
         }
     }
 });
+
+client.login(TOKEN);

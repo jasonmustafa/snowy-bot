@@ -1,4 +1,4 @@
-const config = require('../config.json');
+const { version } = require('../config.json');
 
 module.exports = {
     name: 'info',
@@ -6,7 +6,7 @@ module.exports = {
 
     execute(message, args) {
         if (args[0] === 'version') {
-            message.channel.send('Version ' + config.version);
+            message.channel.send('Version ' + version);
         } else {
             message.channel.send('Invalid arguments!');
         }
