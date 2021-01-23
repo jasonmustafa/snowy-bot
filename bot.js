@@ -85,6 +85,11 @@ client.on('message', (message) => {
             break;
         }
 
+        case 'nogift': {
+            client.commands.get('nogift').execute(message, args);
+            break;
+        }
+
         default: {
             client.commands.get('unsupported').execute(message, args);
             break;
