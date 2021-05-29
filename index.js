@@ -80,7 +80,7 @@ const commandData = [
         required: true,
         choices: [
           {
-            name: 'K\'ril Tsutsaroth',
+            name: "K'ril Tsutsaroth",
             value: 'kril',
           },
           {
@@ -98,8 +98,21 @@ client.once('ready', async () => {
     await client.application?.fetch();
   }
 
-  const command = await client.guilds.cache.get(guildId)?.commands.set(commandData);
-  console.log(command);
+  if (argv.removecommands) {
+    // remove all commands
+    console.log('Removing commands');
+
+    await client.guilds.cache.get(guildId)?.commands.set([])
+      .then(console.log)
+      .catch(console.error);
+  } else {
+    // set commands
+    await client.guilds.cache
+      .get(guildId)
+      ?.commands.set(commandData)
+      .then(console.log)
+      .catch(console.error);
+  }
 });
 
 client.on('interaction', async (interaction) => {
