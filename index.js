@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const fs = require('fs');
 const glob = require('glob');
+var argv = require('yargs/yargs')(process.argv.slice(2)).argv;
 
 const Discord = require('discord.js');
 const { Client, Intents } = require('discord.js');
@@ -68,6 +69,28 @@ const commandData = [
       },
     ],
   },
+  {
+    name: 'boss',
+    description: 'RuneScape 3 boss helper',
+    options: [
+      {
+        name: 'name',
+        type: 'STRING',
+        description: 'The name of the boss',
+        required: true,
+        choices: [
+          {
+            name: 'K\'ril Tsutsaroth',
+            value: 'kril',
+          },
+          {
+            name: 'Barrows',
+            value: 'barrows',
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 client.once('ready', async () => {
@@ -99,4 +122,8 @@ client.on('interaction', async (interaction) => {
   }
 });
 
-client.login(process.env.TOKEN);
+if (argv.dev) {
+  client.login(process.env.TOKEN_DEV);
+} else {
+  client.login(process.env.TOKEN);
+}
